@@ -1,0 +1,56 @@
+name: Build Thinh Audio Tool
+
+on:
+  push:
+    paths:
+      - 'native-v2/**'
+      - 'RUN_TOOL.bat'
+      - '.github/workflows/build-native.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Build EXE
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path dist/Thinh_Audio_Tool/ffmpeg,dist/Thinh_Audio_Tool/output | Out-Null
+          Push-Location native-v2
+          $env:GOOS='windows'
+          $env:GOARCH='amd64'
+          $env:CGO_ENABLED='0'
+          go build -trimpath -ldflags='-H windowsgui -s -w' -o '../dist/Thinh_Audio_Tool/ThinhAudioTool.exe' .
+          Pop-Location
+          Copy-Item RUN_TOOL.bat dist/Thinh_Audio_Tool/RUN_TOOL.bat
+          Copy-Item native-v2/README_CHAY_NGAY.txt dist/Thinh_Audio_Tool/README_CHAY_NGAY.txt
+          Copy-Item native-v2/FFMPEG_NOTICE.txt dist/Thinh_Audio_Tool/FFMPEG_NOTICE.txt
+
+      - name: Bundle FFmpeg
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Invoke-WebRequest -Uri 'https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-64.zip' -OutFile ffmpeg.zip
+          Expand-Archive ffmpeg.zip ffmpeg_pkg -Force
+          $ff = Get-ChildItem ffmpeg_pkg -Filter ffmpeg.exe -Recurse | Select-Object -First 1
+          if (-not $ff) { throw 'ffmpeg.exe not found' }
+          Copy-Item $ff.FullName dist/Thinh_Audio_Tool/ffmpeg/ffmpeg.exe
+
+      - name: Create portable ZIP
+        shell: pwsh
+        run: Compress-Archive -Path dist/Thinh_Audio_Tool -DestinationPath Thinh_Audio_Tool_Portable.zip -CompressionLevel Optimal
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Thinh_Audio_Tool_Portable
+          path: Thinh_Audio_Tool_Portable.zip
+          retention-days: 7
