@@ -29,7 +29,7 @@ jobs:
           $env:GOOS='windows'
           $env:GOARCH='amd64'
           $env:CGO_ENABLED='0'
-          go build -trimpath -ldflags='-H windowsgui -s -w' -o '../dist/Thinh_Audio_Tool/ThinhAudioTool.exe' .
+          go build -trimpath -ldflags='-s -w' -o '../dist/Thinh_Audio_Tool/ThinhAudioTool.exe' .
           Pop-Location
           Copy-Item RUN_TOOL.bat dist/Thinh_Audio_Tool/RUN_TOOL.bat
           Copy-Item native-v2/README_CHAY_NGAY.txt dist/Thinh_Audio_Tool/README_CHAY_NGAY.txt
