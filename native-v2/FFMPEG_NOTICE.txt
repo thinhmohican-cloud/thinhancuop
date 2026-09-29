@@ -1,0 +1,4 @@
+This package uses FFmpeg as an external executable for media conversion.
+FFmpeg: https://ffmpeg.org/
+The GitHub workflow downloads FFmpeg 6.1 Windows 64-bit from ffbinaries-prebuilt.
+See the FFmpeg project and distributor for applicable license/source information.
